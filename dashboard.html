@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pakistan House Cost Estimator</title>
+<style>
+:root{--bg:#f3f5f9;--card:#fff;--ink:#0f172a;--mut:#64748b;--line:#e5e8ef;--ac:#1d4ed8;--soft:#e8efff;--warn:#b45309}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;font-size:14px}
+header{background:linear-gradient(135deg,#0b1220,#1e3a8a);color:#fff;padding:26px 20px}
+header h1{font-size:24px}header p{color:#b6c6e6;font-size:13px;margin-top:4px}
+.wrap{max-width:1180px;margin:0 auto;padding:18px;display:grid;grid-template-columns:400px 1fr;gap:16px}
+@media(max-width:900px){.wrap{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:16px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut);margin-bottom:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{font-size:12px;font-weight:600;color:var(--mut);display:block;margin-bottom:3px}
+select,input[type=number]{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+.seg{display:flex;gap:6px;margin:4px 0 10px}
+.seg button{flex:1;padding:9px 4px;border:1px solid var(--line);background:#fff;border-radius:8px;font:inherit;font-weight:600;cursor:pointer}
+.seg button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.grp{font-weight:700;margin:12px 0 4px;font-size:13px}
+.it{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px}
+.it:hover{background:var(--bg)}.it .n{flex:1}.it .u{color:var(--mut);font-size:12px;display:block}
+.it select{width:auto;padding:4px 6px;font-size:12px}
+.tag{font-size:10px;font-weight:700;padding:2px 6px;border-radius:99px;background:var(--soft);color:var(--ac)}
+.tag.as{background:#fef3c7;color:var(--warn)}
+.kpis{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:12px}
+@media(max-width:600px){.kpis{grid-template-columns:1fr}}
+.kpi{background:var(--soft);border-radius:12px;padding:14px}.kpi small{color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase}
+.kpi b{display:block;font-size:26px;color:var(--ac)}.kpi.s b{font-size:17px;color:var(--ink)}
+table{width:100%;border-collapse:collapse}
+td,th{padding:7px 6px;border-bottom:1px solid var(--line);text-align:right}th{font-size:11px;color:var(--mut);text-transform:uppercase}
+td:first-child,th:first-child{text-align:left}
+.bar{height:6px;background:var(--soft);border-radius:9px;margin-top:3px}.bar i{display:block;height:100%;background:var(--ac);border-radius:9px}
+.notes{font-size:12px;color:var(--warn);padding-left:16px}.notes li{margin-bottom:3px}
+.ur{font-family:"Noto Naskh Arabic","Segoe UI",serif;color:var(--mut);font-size:12px}
+.tools{display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap}.tools button{padding:8px 12px;border:1px solid var(--ac);background:#fff;color:var(--ac);border-radius:8px;font:inherit;font-weight:600;cursor:pointer}.tools a{font-size:12px;color:var(--ac)}</style></head><body>
+<header><h1>Pakistan House Cost Estimator</h1><p>Real market rates 2021-2026 + trend forecast (ranges, not fixed prices)</p></header>
+<div class="wrap">
+<div>
+ <div class="card"><h2>Plot &amp; Location</h2>
+  <div class="g2">
+   <div><label>City</label><select id="city"></select></div>
+   <div><label>Year</label><select id="year"></select></div>
+   <div><label>Marla</label><input type="number" id="marla" value="5" min="1" max="40" step="0.5"></div>
+   <div><label>Floors</label><select id="floors"><option>1</option><option selected>2</option><option>3</option></select></div>
+   <div><label>Bedrooms</label><input type="number" id="beds" min="0" max="20"></div>
+   <div><label>Bathrooms</label><input type="number" id="baths" min="0" max="20"></div>
+   <div><label>Kitchens</label><input type="number" id="kitchens" min="0" max="6"></div>
+   <div><label>Rate level</label><select id="level"><option value="economy">Economy (low end)</option><option value="market" selected>Market average</option><option value="premium">Premium (high end)</option></select></div>
+  </div></div>
+ <div class="card"><h2>Construction Stage</h2>
+  <div class="seg" id="stage"><button data-s="grey">Grey</button><button data-s="semi">Semi-Finished</button><button data-s="finished" class="on">Finished</button></div>
+  <div style="font-size:12px;color:var(--mut)">Stage chun'ne se neeche ticks khud set hote hain; phir aap apni marzi se tick/untick karein. Semi-finished mein darwaze (sirf chokhat), bijli aur plumbing ka partial kaam count hota hai.</div>
+  <div id="list"></div></div>
+</div>
+<div>
+ <div class="card"><div class="tools"><button onclick="pdf()">⬇ PDF Quotation</button>
+  <button onclick="$('csv').click()">⬆ Import city rates CSV</button><a href="/api/csv-template">CSV template</a><input type="file" id="csv" accept=".csv" hidden></div><div class="kpis">
+  <div class="kpi"><small id="tl">Estimated cost</small><b id="total">-</b><span id="rng" class="ur" style="font-family:inherit"></span></div>
+  <div class="kpi s"><small>Per sq ft</small><b id="psf">-</b></div>
+  <div class="kpi s"><small>Covered area</small><b id="cov">-</b></div></div></div>
+ <div class="card"><h2>Breakdown</h2><table id="tbl"></table></div>
+ <div class="card"><h2>Cost by year (same house)</h2><svg id="chart" viewBox="0 0 640 190" width="100%"></svg></div>
+ <div class="card"><h2>Data notes</h2><ul class="notes" id="notes"></ul></div>
+</div></div>
+<script>
+const API=location.protocol==="file:"?"http://127.0.0.1:8000":"";const $=id=>document.getElementById(id);let last,cat,stage="finished",en={},vr={},t;
+const G={grey:"Grey Structure (Important)",outer:"Outer Work",finish:"Finishing"};
+const pkr=n=>n>=1e7?"PKR "+(n/1e7).toFixed(2)+" Crore":n>=1e5?"PKR "+(n/1e5).toFixed(1)+" Lakh":"PKR "+Math.round(n).toLocaleString();
+const num=n=>Math.round(n).toLocaleString();
+async function init(){
+ try{cat=await (await fetch(API+"/api/catalog")).json()}catch(err){$("total").textContent="Server nahi mila";$("rng").textContent="Terminal mein chalayein: uvicorn api:app --reload, phir http://127.0.0.1:8000 kholein";return}
+ $("city").innerHTML=cat.cities.map(c=>`<option>${c}</option>`).join("");
+ let y="";for(let i=cat.years.min;i<=cat.years.max;i++)y+=`<option ${i==cat.years.last_actual?"selected":""}>${i}${i>cat.years.last_actual?" (forecast)":""}</option>`;
+ $("year").innerHTML=y;
+ $("notes").innerHTML=cat.notes.map(n=>`<li>${n}</li>`).join("");
+ defaults();setStage(stage);
+ document.querySelectorAll("#city,#year,#marla,#floors,#beds,#baths,#kitchens,#level").forEach(e=>e.addEventListener("input",e=>{if(["marla","floors"].includes(e.target.id))defaults();queue()}));
+ document.querySelectorAll("#stage button").forEach(b=>b.onclick=()=>setStage(b.dataset.s));
+}
+function defaults(){const m=+$("marla").value||5,f=+$("floors").value;
+ const b=Math.max(1,Math.round(m*.4*f));$("beds").value=b;$("baths").value=b;$("kitchens").value=(f>1&&m>=10)?f:1;}
+function setStage(s){stage=s;document.querySelectorAll("#stage button").forEach(b=>b.classList.toggle("on",b.dataset.s==s));
+ cat.items.forEach(i=>en[i.id]=i.required||i.stage[s]);render();queue();}
+function render(){let h="",last="";
+ cat.items.forEach(i=>{if(i.group!=last){h+=`<div class="grp">${G[i.group]}</div>`;last=i.group}
+  h+=`<div class="it"><input type="checkbox" data-id="${i.id}" ${en[i.id]?"checked":""} ${i.required?"disabled":""}>
+  <span class="n">${i.en}<span class="u ur">${i.ur}</span></span>
+  ${i.variants.length?`<select data-v="${i.id}">${i.variants.map(v=>`<option value="${v.key}" ${vr[i.id]==v.key?"selected":""}>${v.label}</option>`).join("")}</select>`:""}
+  <span class="tag ${i.assumed?"as":""}">${i.required?"Required":i.assumed?"Assumed":"Your data"}</span></div>`});
+ $("list").innerHTML=h;
+ $("list").querySelectorAll("input").forEach(c=>c.onchange=()=>{en[c.dataset.id]=c.checked;queue()});
+ $("list").querySelectorAll("select").forEach(s=>s.onchange=()=>{vr[s.dataset.v]=s.value;queue()});}
+function queue(){clearTimeout(t);t=setTimeout(calc,150)}
+async function calc(){
+ const items={};cat.items.forEach(i=>items[i.id]={enabled:!!en[i.id],variant:vr[i.id]||null});
+ const body={city:$("city").value,year:parseInt($("year").value),marla:+$("marla").value,floors:+$("floors").value,stage,
+  level:$("level").value,beds:+$("beds").value,baths:+$("baths").value,kitchens:+$("kitchens").value,items};
+ last=body;const r=await fetch(API+"/api/estimate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+ if(!r.ok){$("total").textContent="Input check karein";return}
+ show(await r.json(),body.year);}
+function show(d,year){
+ $("tl").textContent=d.is_forecast?"Forecast cost "+year:"Estimated cost "+year;
+ $("total").textContent=pkr(d.total);$("rng").textContent=pkr(d.low)+" - "+pkr(d.high);
+ $("psf").textContent="PKR "+num(d.per_sqft);$("cov").textContent=num(d.covered_sqft)+" sqft";
+ let h="<tr><th>Item</th><th>Qty</th><th>Rate</th><th>Cost</th><th>%</th></tr>";
+ d.lines.slice().sort((a,b)=>b.cost-a.cost).forEach(l=>h+=`<tr><td>${l.en}${l.variant?" ("+l.variant+")":""}${l.scope<1?" <span class=tag>partial "+l.scope*100+"%</span>":""}
+  <div class="bar"><i style="width:${Math.min(l.share*2.5,100)}%"></i></div></td><td>${num(l.qty)} ${l.unit}</td><td>${num(l.unit_rate)}</td><td><b>${pkr(l.cost)}</b></td><td>${l.share}</td></tr>`);
+ $("tbl").innerHTML=h;chart(d.timeline,year)}
+function chart(t,year){const mx=Math.max(...t.map(x=>x.total)),w=640/t.length;
+ $("chart").innerHTML=t.map((x,i)=>{const hh=x.total/mx*130;return `<rect x="${i*w+8}" y="${150-hh}" width="${w-16}" height="${hh}" rx="4" fill="${x.forecast?"#93b4f5":"#1d4ed8"}" opacity="${x.year==year?1:.75}"/>
+ <text x="${i*w+w/2}" y="168" font-size="11" text-anchor="middle" fill="#64748b">${x.year}</text>
+ <text x="${i*w+w/2}" y="${144-hh}" font-size="9.5" text-anchor="middle" fill="#0f172a">${(x.total/1e5).toFixed(0)}L</text>`}).join("")+
+ `<text x="4" y="186" font-size="10" fill="#64748b">Dark = actual data, light = forecast (L = Lakh)</text>`}
+async function pdf(){const r=await fetch(API+"/api/quote.pdf",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(last)});
+ if(!r.ok)return alert("PDF nahi ban saka");const a=document.createElement("a");a.href=URL.createObjectURL(await r.blob());a.download="house_quotation.pdf";a.click()}
+$("csv").onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=await fetch(API+"/api/import-csv",{method:"POST",body:await f.text()});
+ const j=await r.json();alert(r.ok?j.rows+" city rates import ho gaye":j.detail);e.target.value="";calc()};
+init();
+</script></body></html>
